@@ -9,7 +9,7 @@ inputs:
   gptscript-release:
     description: 'gptscript release version to be installed'
     required: false
-    default: '0.1.1'
+    default: '0.8.2'
   install-dir:
     description: 'Where to install the gptscript binary'
     required: false
@@ -40,8 +40,22 @@ runs:
         shaprog() {
           case ${{ runner.os }} in
             Linux)
-              sha256sum --ignore-missing --check $2
+              case ${{ runner.arch }} in
+               X64)
+                cat $2 | grep gptscript-v${{ inputs.gptscript-release }}-linux-amd64.tar.gz | sha256sum -c
+                ;;
+
+               ARM64)
+                cat $2 | grep gptscript-v${{ inputs.gptscript-release }}-linux-arm64.tar.gz | sha256sum -c
+                ;;
+
+               *)
+                log_error "unsupported architecture $arch"
+                exit 1
+                ;;
+              esac
               ;;
+
             macOS)
               shasum -a256 --ignore-missing --check $2
               ;;
